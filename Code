@@ -1,0 +1,116 @@
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import curve_fit
+
+
+# Function to read data from the .txt file
+def read_data(file_path):
+    times = []
+    strains = []
+
+    with open(file_path, 'r') as file:
+        for line in file:
+            time, strain = map(float, line.strip().split('\t'))
+            times.append(time)
+            strains.append(strain)
+
+    return times, strains
+
+# Function to plot the time series graph
+def plot_time_series(times, strains):
+    plt.plot(times, strains, label='Time Series')
+    plt.xlabel('Time')
+    plt.ylabel('Strain')
+    plt.title('Time Series Plot')
+    plt.legend()
+    plt.show()
+
+# Define a linear function for curve fitting
+def linear_func(x, a, b):
+    return a * x + b
+
+# Replace 'your_file.txt' with the path to your .txt file
+file_path = r'C:\Users\Vanshita\Downloads\GW150914_strain_data_final.txt'
+
+# Read data from the file
+times, strains = read_data(file_path)
+
+# Plot the time series graph
+#plot_time_series(times, strains)
+
+
+# Example strain data (replace this with your actual strain data)
+#strains = np.array([])
+
+# Find indices where strain data crosses zero
+zero_crossings = np.where(np.diff(np.sign(strains)))[0]
+
+# Calculate time differences between consecutive zero-crossings
+time_diffs = np.diff(zero_crossings)
+
+# print("Indices of zero-crossings:", zero_crossings)
+# print("Time differences between zero-crossings:", time_diffs)
+
+fGW = 0.5/ time_diffs
+freq=fGW**(-8/3)
+# print("Frequency of Gravitational Waves produced:", fGW)
+
+# # Function to plot the frequency vs time graph
+# def plot_freqvstime(times, fGW):
+#     plt.plot(times, fGW, label='frequency vs time')
+#     plt.xlabel('Time')
+#     plt.ylabel('Frequency')
+#     plt.title('fGW vs Time')
+#     plt.legend()
+#     plt.show()
+
+   
+# # Plot the frequency vs time graph
+# plot_freqvstime(times, fGW)
+
+# Assuming strains is a list or numpy array of strain data from your data file
+# and times is a list or numpy array of time data corresponding to the strains.
+
+# First, convert strains to a numpy array if it's not already one
+#strains = np.array(strains)
+
+
+# # Calculate time differences between consecutive zero-crossings
+# time_diffs = np.diff(times[zero_crossings])
+
+# Calculate the average time for each interval between zero-crossings to plot frequency over time
+avg_times = [(times[zero_crossings[i]] + times[zero_crossings[i+1]]) / 2 for i in range(len(zero_crossings)-1)]
+# xlength=times[-1]-times[0]
+# ylength=freq[-1]-freq[0]
+# print(f"The slope of the curve is : {ylength/xlength}")
+# print(avg_times)
+# Perform linear regression to fit a straight line
+popt, pcov = curve_fit(linear_func, avg_times, freq)
+
+# Generate fitted line using the optimized parameters
+fitted_line = linear_func(np.array(avg_times), *popt)
+
+# #Plotting frequency vs time as described
+# plt.figure(figsize=(10, 6))
+# plt.step(avg_times, freq, where='mid', label='Frequency of Gravitational Waves')
+# plt.xlabel('Time (s)')
+# plt.ylabel('Frequency^(-8/3) (Hz)')
+# plt.title('Frequency of Gravitational Waves vs. Time')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+# Plotting frequency^(-8/3) vs time and the fitted line
+plt.figure(figsize=(10, 6))
+plt.step(avg_times, freq, where='mid', label='Frequency^(-8/3) of Gravitational Waves', zorder=1)
+plt.plot(avg_times, fitted_line, 'r--', label='Fitted Line', zorder=2)
+plt.xlabel('Time (s)')
+plt.ylabel('Frequency^(-8/3) (Hz)')
+plt.title('Frequency^(-8/3) of Gravitational Waves vs. Time and Fitted Line')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Display the coefficients of the fitted line
+print(f"Slope: {popt[0]}, Intercept: {popt[1]}")
